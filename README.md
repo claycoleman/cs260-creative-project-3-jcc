@@ -3,13 +3,13 @@ For this lab, you will create a website that uses Vue for the front end. This we
 Requirements
 This is a creative project, so you are welcome to build what you would like. The basic requirements are:
 
-- [ ] The site uses Vue
-- [ ] The site contains a footer that links to your public GitHub repository
+- [x] The site uses Vue
+- [x] The site contains a footer that links to your public GitHub repository
 
 Rubric for Grading
 We will grade your projects based on:
 
-- [ ] you used Vue for the entire site
+- [x] you used Vue for the entire site
 - [ ] how well you follow web design principles: spacing, typography, color, consistency, and responsive design.
 
 TAs will assign scores in these ranges:
