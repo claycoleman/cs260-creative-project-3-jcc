@@ -10,7 +10,7 @@ Rubric for Grading
 We will grade your projects based on:
 
 - [x] you used Vue for the entire site
-- [ ] how well you follow web design principles: spacing, typography, color, consistency, and responsive design.
+- [x] how well you follow web design principles: spacing, typography, color, consistency, and responsive design.
 
 TAs will assign scores in these ranges:
 
