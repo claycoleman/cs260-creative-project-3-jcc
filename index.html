@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>CSS Color Tool | Clay Coleman</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet" />
+  </head>
+
+  <body>
+    <h1 style="margin-left: 8px">CSS Color Tool</h1>
+    <div id="app" :class="{ copied: copied }">
+      <div id="controls">
+        <p>
+          Input a color in either valid hex or rgb format, and this tool will generate the
+          associated lightened and darkened colors. This is very handy for finding hover styles.
+        </p>
+        <form id="colorForm" v-on:submit.prevent="generateColors">
+          <div>
+            <input v-model="colorText" v-bind:class="{ hasText: hasColorText  }" />
+            <label>Color (hex or rgb)</label>
+          </div>
+          <div>
+            <input type="number" v-model="percentage" v-bind:class="{ hasText: hasPercentage }" />
+            <label>Step Percentage</label>
+          </div>
+          <p class="invalidColorInput" v-show="invalidColorInput">
+            Invalid input. Enter a valid color and percentage value!
+          </p>
+          <button type="submit">Colorify</button>
+        </form>
+      </div>
+      <div id="results">
+        <div v-if="colors.length > 0" id="colorWrapper">
+          <div id="originalColor">
+            <div class="sample" :style="getSampleStyle(originalColor)">
+              Hover here to test the color transition from the entered color to the selected color
+              on the right.
+            </div>
+            <h5>{{ originalColor.toHexString() }}</h5>
+            <h5>{{ originalColor.toRgbString() }}</h5>
+            <h5>Original Color</h5>
+            <!-- TODO style right -->
+            <!-- TODO test button, click on another color and let that be the hover style; use 
+              vue to embed a styles doc... or manually add it with JS -->
+          </div>
+          <div id="colors">
+            <div class="color" v-for="(colorItem, index) in colors">
+              <div
+                :class="{ sample: true, selectedColorIndex: index == selectedColorIndex }"
+                :style="getSampleStyle(colorItem)"
+              ><span v-show="colorItem.copied">Copied!</span></div>
+              <h5 class="clickable" v-on:click="copyText(colorItem.color.toHexString(), index)">{{ colorItem.color.toHexString() }}</h5>
+              <h5 class="clickable" v-on:click="copyText(colorItem.color.toRgbString(), index)">{{ colorItem.color.toRgbString() }}</h5>
+              <!-- TODO click on these copies to clipboard -->
+              <h5>{{ colorItem.label }}</h5>
+              <!-- TODO style right -->
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          
+        </div>
+      </div>
+
+      <!-- loading spinner -->
+      <div v-show="loading">
+        <div class="loader-container">
+          <div class="loader">
+            <div class="inner one"></div>
+            <div class="inner two"></div>
+            <div class="inner three"></div>
+            <h4>Loading...</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <a target="_blank" href="https://github.com/claycoleman/cs260-creative-project-3-jcc"
+        >GitHub Repo</a
+      >
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.2/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="tinycolor.js"></script>
+    <script src="/script.js"></script>
+  </body>
+</html>
