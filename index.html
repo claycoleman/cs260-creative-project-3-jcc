@@ -10,7 +10,7 @@
 
   <body>
     <h1 style="margin-left: 8px">CSS Color Tool</h1>
-    <div id="app" :class="{ copied: copied }">
+    <div id="app" :class="{ dropDown: dropDown }">
       <div id="controls">
         <p>
           Input a color in either valid hex or rgb format, and this tool will generate the
@@ -34,13 +34,20 @@
       <div id="results">
         <div v-if="colors.length > 0" id="colorWrapper">
           <div id="originalColor">
-            <div class="sample" :style="getSampleStyle(originalColor)">
+            <div
+              class="sample"
+              v-on:click="copyText(getHoverStylesText(), selectedColorIndex, 'Copied hover styles!')"
+            >
               Hover here to test the color transition from the entered color to the selected color
-              on the right.
+              on the right. Click to copy the hover styles.
             </div>
-            <h5>{{ originalColor.toHexString() }}</h5>
-            <h5>{{ originalColor.toRgbString() }}</h5>
             <h5>Original Color</h5>
+            <h5 class="clickable" v-on:click="copyText(originalColor.toHexString(), index)">
+              {{ originalColor.toHexString() }}
+            </h5>
+            <h5 class="clickable" v-on:click="copyText(originalColor.toRgbString(), index)">
+              {{ originalColor.toRgbString() }}
+            </h5>
             <!-- TODO style right -->
             <!-- TODO test button, click on another color and let that be the hover style; use 
               vue to embed a styles doc... or manually add it with JS -->
@@ -48,20 +55,35 @@
           <div id="colors">
             <div class="color" v-for="(colorItem, index) in colors">
               <div
-                :class="{ sample: true, selectedColorIndex: index == selectedColorIndex }"
+                :class="{ clickable: true, sample: true, selectedColorIndex: index == selectedColorIndex }"
                 :style="getSampleStyle(colorItem)"
-              ><span v-show="colorItem.copied">Copied!</span></div>
-              <h5 class="clickable" v-on:click="copyText(colorItem.color.toHexString(), index)">{{ colorItem.color.toHexString() }}</h5>
-              <h5 class="clickable" v-on:click="copyText(colorItem.color.toRgbString(), index)">{{ colorItem.color.toRgbString() }}</h5>
-              <!-- TODO click on these copies to clipboard -->
-              <h5>{{ colorItem.label }}</h5>
+                v-on:click="setCurrentColor(index)"
+              ></div>
+              <h5 class="label">{{ colorItem.label }}</h5>
+              <h5 class="clickable" v-on:click="copyText(colorItem.color.toHexString(), index)">
+                {{ colorItem.color.toHexString() }}
+              </h5>
+              <h5 class="clickable" v-on:click="copyText(colorItem.color.toRgbString(), index)">
+                {{ colorItem.color.toRgbString() }}
+              </h5>
               <!-- TODO style right -->
             </div>
           </div>
+
+          <!-- dynamic styles -->
+          <v-style>
+            #originalColor .sample { 
+              background-color: {{ originalColor.toHexString() }}; 
+            }
+            #originalColor .sample:hover { 
+              background-color: {{ colors[selectedColorIndex].color.toHexString() }}; 
+            } 
+            #app:before { 
+              content: "{{ dropDownText }}"; 
+            }
+          </v-style>
         </div>
-        <div v-else>
-          
-        </div>
+        <div v-else></div>
       </div>
 
       <!-- loading spinner -->

@@ -1,14 +1,24 @@
+Vue.component('v-style', {
+  render: function(createElement) {
+    return createElement(
+      'style', // tag
+      this.$slots.default // array of children
+    );
+  },
+});
+
 let app = new Vue({
   el: '#app',
   data: {
     colorText: 'rgb(16,75,140)',
-    percentage: 6,
+    percentage: 2,
     originalColor: null,
     selectedColorIndex: 0,
     colors: [],
     loading: true,
     invalidColorInput: false,
-    copied: false,
+    dropDown: false,
+    dropDownText: 'Copied!',
   },
   created() {
     this.startApp();
@@ -19,21 +29,39 @@ let app = new Vue({
         this.loading = false;
       }, 1250);
     },
+    startDropDown(dropDownText) {
+      clearTimeout(this.timeout);
+      this.dropDownText = dropDownText;
+      this.dropDown = true;
+      this.timeout = setTimeout(() => {
+        this.dropDown = false;
+      }, 1500);
+    },
+    clickOriginal() {
+      this.startDropDown('Button clicked!');
+    },
+    setCurrentColor(index) {
+      this.selectedColorIndex = index;
+    },
     // from https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
-    fallbackCopyTextToClipboard(text, index) {
+    fallbackCopyTextToClipboard(text, index, dropDownText) {
       var textArea = document.createElement('textarea');
       textArea.value = text;
+
+      // Move it off screen.
+      textArea.style.cssText = 'position: absolute; left: -99999em';
+
+      // Set to readonly to prevent mobile devices opening a keyboard when
+      // text is .select()'ed.
+      textArea.setAttribute('readonly', true);
+
       document.body.appendChild(textArea);
-      textArea.focus();
       textArea.select();
 
       try {
         var successful = document.execCommand('copy');
         if (successful) {
-          this.copied = true;
-          this.timeout = setTimeout(() => {
-            this.copied = false;
-          }, 1500);
+          this.startDropDown(dropDownText);
         }
       } catch (err) {
         console.error('Fallback: Oops, unable to copy', err);
@@ -41,25 +69,22 @@ let app = new Vue({
 
       document.body.removeChild(textArea);
     },
-    copyText(text, index) {
+    copyText(text, index, dropDownText = 'Copied!') {
       this.selectedColorIndex = index;
-      clearTimeout(this.timeout);
       if (!navigator.clipboard) {
-        this.fallbackCopyTextToClipboard(text, index);
+        this.fallbackCopyTextToClipboard(text, index, dropDownText);
         return;
       }
       navigator.clipboard.writeText(text).then(
         function() {
-          this.copied = true;
-          this.timeout = setTimeout(() => {
-            this.copied = false;
-          }, 500);
+          this.startDropDown(dropDownText);
         },
         function(err) {
           console.error('Async: Could not copy text: ', err);
         }
       );
     },
+    // main work done here
     generateColors() {
       let color = tinycolor(this.colorText);
       let percentage = parseFloat(this.percentage);
@@ -69,6 +94,8 @@ let app = new Vue({
       } else {
         this.invalidColorInput = false;
       }
+      this.selectedColorIndex = 0;
+
       console.log('valid color: ' + color.toHexString());
 
       this.originalColor = color;
@@ -78,7 +105,6 @@ let app = new Vue({
       // lighten
       for (let index = 1; index <= 5; index++) {
         this.colors.push({
-          copied: false,
           label: percentage * index + '% lightened',
           color: color.clone().lighten(percentage * index),
         });
@@ -87,7 +113,6 @@ let app = new Vue({
       // darken
       for (let index = 1; index <= 5; index++) {
         this.colors.push({
-          copied: false,
           label: percentage * index + '% darkened',
           color: color.clone().darken(percentage * index),
         });
@@ -96,7 +121,6 @@ let app = new Vue({
       color.analogous().map((c, index) => {
         if (index == 0) return;
         this.colors.push({
-          copied: false,
           label: 'analogous #' + index,
           color: c,
         });
@@ -104,18 +128,28 @@ let app = new Vue({
       color.monochromatic().map((c, index) => {
         if (index == 0) return;
         this.colors.push({
-          copied: false,
           label: 'monochromatic #' + index,
           color: c,
         });
       });
-
-      // toHexString
-      // toRgbString
     },
     getSampleStyle(colorItem) {
       let color = colorItem.color != null ? colorItem.color : colorItem;
-      return `height: 45px; background-color: ${color.toHexString()};`;
+      return `background-color: ${color.toHexString()};`;
+    },
+    getHoverStylesText() {
+      return `
+.your-class {
+  background-color: ${this.originalColor.toHexString()};
+  transition: all 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1), cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: background-color;
+}
+
+.your-class:hover {
+  background-color: ${this.colors[this.selectedColorIndex].color.toHexString()};
+}
+`;
     },
   },
   computed: {
